@@ -1,0 +1,15 @@
+.server-online {
+    color: rgb(88, 61, 162);
+}
+
+.server-offline {
+    color: red;
+}
+
+.server-not-selected {
+    color: gray;
+}
+
+.server-checking {
+    color: gray;
+}

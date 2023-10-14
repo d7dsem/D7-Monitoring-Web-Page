@@ -1,0 +1,6 @@
+go 1.21.1
+
+use (
+	"./backend (simply demo proj)/go/proj1"
+	"./backend (simply demo proj)/go/proj2"
+)

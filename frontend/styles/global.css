@@ -1,0 +1,26 @@
+body {
+    background-color: #e4dcdc;
+}
+
+.wait-cursor {
+    cursor: wait;
+}
+
+.default-cursor {
+    cursor: default;
+}
+
+.bold-underline {
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.section-divider {
+    border-color: red;
+    margin: 20px 0;
+}
+
+.divider {
+    margin: 0 10px;
+    color: #888;
+}

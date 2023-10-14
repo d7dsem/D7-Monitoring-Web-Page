@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Debug Interface</title>
+
+    <!-- Глобальні стилі -->
+    <link rel="stylesheet" type="text/css" href="styles/global.css">
+
+    <!-- Стилі статусів сервера -->
+    <link rel="stylesheet" type="text/css" href="styles/server-statuses.css">
+
+    <!-- Стилі для перемикача -->
+    <link rel="stylesheet" type="text/css" href="styles/toggle-switch.css">
+
+    <!-- Стилі для вкладок -->
+    <link rel="stylesheet" type="text/css" href="styles/tabs.css">
+
+    <!-- Стилі для області виводу -->
+    <link rel="stylesheet" type="text/css" href="styles/content.css">
+
+</head>
+<body>
+    <h1>WEB-debug view</h1>
+    
+    <!-- <label>
+        <span style="font-weight: bold; text-decoration: underline;">Just test label</span>: 
+    </label> -->
+    
+    <hr class="section-divider">
+
+    <span class="bold-underline">Data source</span>: <select id="currentServerDropDown"></select>
+    
+    <span class="divider">|</span>
+
+    <span class="divider">|</span>
+    
+    <span class="bold-underline">Current Server</span>: <span id="currentServerDisplay"></span>
+
+    <span class="divider">|</span>
+
+   
+    <label class="auto-refresh-label" for="autoRefreshToggle">AutoRefresh:</label>
+
+    <div class="auto-refresh-switch">
+        <div class="toggle-switch">
+            <input type="checkbox" id="autoRefreshToggle">
+            <label for="autoRefreshToggle"></label>
+        </div>
+    </div>
+   
+
+    <select id="refreshRate" disabled>
+        <!-- refreshRate options will be populated here -->
+    </select>
+
+    <span class="divider">|</span>
+
+    <button id="refreshButton">Refresh</button>
+
+
+    <hr class="section-divider">
+    
+    <div id="tabs">
+        <ul>
+        <span ></span>
+          
+        </ul>
+        <div id="tab-content">
+            <span >tab content</span>
+        </div>
+    </div>
+
+     
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

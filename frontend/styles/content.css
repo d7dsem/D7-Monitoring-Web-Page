@@ -1,0 +1,10 @@
+#tab-content {
+    background-color: #000;
+    color: #0F0;
+    font-family: 'Courier New', Courier, monospace;
+    padding: 10px;
+    overflow-y: auto;
+    height: 300px;
+    border: 1px solid #0F0;
+    margin-top: 10px;
+}

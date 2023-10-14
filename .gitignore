@@ -1,0 +1,6 @@
+dbg-web-viewer.code-workspace
+
+#.vscode
+
+*.exe
+*.bin

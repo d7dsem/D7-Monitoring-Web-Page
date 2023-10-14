@@ -1,0 +1,22 @@
+#tabs ul li {
+    cursor: pointer;
+    margin-right: 10px; 
+    border: 1px solid #000; 
+    padding: 5px 10px;
+    transition: background-color 0.3s;
+}
+
+#tabs ul {
+    display: flex;
+    list-style-type: none;
+    padding: 0;
+}
+
+#tabs ul li:hover {
+    background-color: #f7f7f7;
+}
+
+#tabs ul li.active {
+    background-color: #a1eaa2;
+    font-weight: bold;
+}

@@ -1,0 +1,103 @@
+{
+    "servers": [
+        {
+            "name": "RECEIVER",
+            "url": "http://127.0.0.1:49999",
+            "tabs": [
+                {
+                    "name": "VF",
+                    "routes": ["/vf"],
+                    "formatter": "vfFormatter"
+                },
+                {
+                    "name": "MD",
+                    "routes": ["/md"],
+                    "formatter": "mdFormatter"
+                },
+                {
+                    "name": "GLOBAL",
+                    "routes": ["/global"],
+                    "formatter": "globalFormatter"
+                },
+                {
+                    "name": "CONN",
+                    "routes": ["/conn"],
+                    "formatter": "connFormatter"
+                },
+                {
+                    "name": "SPD",
+                    "routes": ["/spd"],
+                    "formatter": "spdFormatter"
+                },
+                {
+                    "name": "MEM",
+                    "routes": ["/mem"],
+                    "formatter": "memFormatter"
+                }
+            ]
+        },
+        {
+            "name": "SENDER",
+            "url": "http://127.0.0.1:49998",
+            "tabs": [
+                {
+                    "name": "VF",
+                    "routes": ["/vf"],
+                    "formatter": "vfFormatter"
+                },
+                {
+                    "name": "MD",
+                    "routes": ["/md"],
+                    "formatter": "mdFormatter"
+                },
+                {
+                    "name": "GLOBAL",
+                    "routes": ["/global"],
+                    "formatter": "globalFormatter"
+                },
+                {
+                    "name": "CONN",
+                    "routes": ["/conn"],
+                    "formatter": "connFormatter"
+                },
+                {
+                    "name": "SPD",
+                    "routes": ["/spd"],
+                    "formatter": "spdFormatter"
+                },
+                {
+                    "name": "MEM",
+                    "routes": ["/mem"],
+                    "formatter": "memFormatter"
+                }
+            ]
+        },
+        {
+            "name": "DIALOGER",
+            "url": "http://127.0.0.1:49997",
+            "tabs": [
+                {
+                    "name": "BOTH",
+                    "routes": ["/dlg", "/param"],
+                    "formatter": "memFormatter"
+                },
+                {
+                    "name": "PARAM",
+                    "routes": ["/param"],
+                    "formatter": "paramFormatter"
+                },
+                {
+                    "name": "DLG",
+                    "routes": ["/dlg"],
+                    "formatter": "dlgFormatter"
+                },
+                {
+                    "name": "MEM",
+                    "routes": ["/mem"],
+                    "formatter": "memFormatter"
+                }
+            ]
+        }
+    ],
+    "refreshRates": [1, 5, 10, 30, 60]
+}
