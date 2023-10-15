@@ -1,6 +1,7 @@
-dbg-web-viewer.code-workspace
+*.code-workspace
 
 #.vscode
-
+backend (simply demo proj)\go\proj1\*.exe~
+backend (simply demo proj)\go\proj1\*.exe
 *.exe
 *.bin

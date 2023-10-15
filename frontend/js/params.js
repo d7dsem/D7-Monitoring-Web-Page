@@ -11,6 +11,7 @@ export const AUTO_REFRESH_INTERVAL_ID = "refreshRate";
 
 export const TABS_CONTAINER_SELECTOR = '#tabs ul';
 export const TAB_ITEM_SELECTOR = '#tabs ul li';
+export const TAB_CONTENT = 'tab-content';
 
 // LocalStorage keys
 export const CURRENT_SERVER_KEY = "currentServer";

@@ -55,8 +55,8 @@ type Dialog struct {
 }
 
 var (
-	PARMS *Params
-	DLG   *Dialog
+	PARAMS *Params
+	DLG    *Dialog
 )
 
 func (dlg *Dialog) Fill() {
@@ -136,7 +136,7 @@ func handleDlgReq(w http.ResponseWriter, r *http.Request) {
 
 func handleParamsReq(w http.ResponseWriter, r *http.Request) {
 	setupCORS(&w, r)
-	data, err := json.Marshal(PARMS)
+	data, err := json.Marshal(PARAMS)
 	if err != nil {
 		http.Error(w, "Failed to encode data", http.StatusInternalServerError)
 		return
@@ -191,7 +191,7 @@ func main() {
 	_ = params
 	dlg := Dialog{}
 
-	PARMS = &params
+	PARAMS = &params
 	DLG = &dlg
 
 	addr, err := startWebServer("127.0.0.1:49997", &params, &dlg)

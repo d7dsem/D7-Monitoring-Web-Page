@@ -1,24 +1,17 @@
-import {DbgConsoleLog, GetConfiguration, GetCurrentServer, GetAutorefreshState, GetAutorefreshInterval} from './main.js';
+import {DbgConsoleLog, GetConfiguration, GetCurrentServer, GetAutoRefreshState, GetAutoRefreshInterval} from './main.js';
 //import { BothFormatter, DlgFormatter, MemFormatter, ParamFormatter, StatusFormatter } from './formaters';
 //import {Formatter} from './formatter.js';
 import {Observer} from './observerStuff.js';
-import { TABS_CONTAINER_SELECTOR, TAB_ITEM_SELECTOR } from './params.js';
+import { TABS_CONTAINER_SELECTOR, TAB_ITEM_SELECTOR, TAB_CONTENT } from './params.js';
 
 const moduleName = "tabs"
 
 class TabsClass extends Observer {
     constructor() {
         super();
-        // this.routes = [
-        //     { name: "param", endpoints: ["/param"] },
-        //     { name: "dlg", endpoints: ["/dlg"] },
-        //     { name: "mem", endpoints: ["/mem"] },
-        //     { name: "both", endpoints: ["/dlg", "/param"] },
-        // ];
-        this.formatterInstances = {};
         this.currentTab = null;
-        this.refreshIntervalID = null;
-
+        this.sleepInterval = 1000
+        this.lastUpdateTime = 0;
     }
 
     getActiveTabStorageKey() {
@@ -26,53 +19,91 @@ class TabsClass extends Observer {
         return `${serverName}_activeTab`;
     }
 
-    async init() {
-        const methodName = "init"
+    getServerRoutes(serverUrl) {
         const config = GetConfiguration(); 
-        const currentServerUrl = GetCurrentServer(); 
+        const currentServerConfig = config.servers.find(server => server.url === serverUrl);
+        if (currentServerConfig && currentServerConfig.tabs) {
+            return currentServerConfig.tabs;            
+        } else {
+            DbgConsoleLog(`Unable to find tabs configuration for the server ${serverUrl}`, moduleName,"getServerRoutes" );
+        }
+    }
+
+    async init() {
+        const methodName = "init"       
+        const serverUrl = GetCurrentServer(); 
 
         this.clearTabs()
-        const currentServerConfig = config.servers.find(server => server.url === currentServerUrl);
-        if (currentServerConfig && currentServerConfig.tabs) {
-            this.routes = currentServerConfig.tabs;
-            this.populateTabs();
-            DbgConsoleLog("populateTabs - OK", moduleName, methodName);
+        const routes = this.getServerRoutes(serverUrl);
+        if (routes) {
+            this.populateTabs(routes);
         } else {
-            console.error("Unable to find tabs configuration for the current server");
-        }
+            DbgConsoleLog(`No tabs for ${serverUrl}`, moduleName,methodName );
+        }   
+             
         
-        const savedActiveTab = JSON.parse(localStorage.getItem(this.getActiveTabStorageKey()));
-
-
-        if (savedActiveTab) {
-            this.setActiveTab(savedActiveTab);
-
-        }
         this.startAutoRefresh();
     }
-    
-    populateTabs() {
-        const tabsList = document.querySelector(TABS_CONTAINER_SELECTOR);
-        this.routes.forEach(tab => {
-            const li = document.createElement('li');
-            li.textContent = tab.name.toUpperCase();
-            li.addEventListener('click', this.tabClickHandler.bind(this, tab)); 
-            tabsList.appendChild(li);
-        });
+
+    setSavedTabActive() {        
+        const savedActiveTab = JSON.parse(localStorage.getItem(this.getActiveTabStorageKey()));
+        if (savedActiveTab) {
+            this.setActiveTab(savedActiveTab);
+        }
+        DbgConsoleLog(`savedActiveTab = ${savedActiveTab}`,moduleName, "setSavedTabActive");
     }
 
+    async startAutoRefresh(){
+        const methodName = "startAutoRefresh"
+        while (true){
+            const server = GetCurrentServer() 
+            const isAutoRefreshOn = GetAutoRefreshState()
+            const refreshInterval = GetAutoRefreshInterval()
+            DbgConsoleLog(`autoRefreshState: ${isAutoRefreshOn}`, moduleName, methodName);
+            DbgConsoleLog(`autoRefreshInterval: ${refreshInterval}`, moduleName, methodName);
+            DbgConsoleLog(`server: ${server}`, moduleName, methodName);
+            if (this.currentTab) {
+                DbgConsoleLog(`this.currentTab: ${this.currentTab}`, moduleName, methodName);
+                DbgConsoleLog(`this.currentTab.routes is array: ${Array.isArray(this.currentTab.routes)}`, moduleName, methodName );
+            }
+            const currentTime = Date.now();
+            if (currentTime - this.lastUpdateTime >= refreshInterval && this.currentTab && isAutoRefreshOn) {
+                const endpoints = this.currentTab.routes;
+                const contentArea = document.getElementById(TAB_CONTENT);
+                this.fetchDataAndRender(server, endpoints, contentArea) 
+            }
+            this.lastUpdateTime = currentTime;
+            // Sleep for a fixed, minimum interval (e.g., 1 second)
+            await new Promise(resolve => setTimeout(resolve, this.sleepInterval));
+        }
+    }
+    
+    populateTabs(routes) {
+        const tabsList = document.querySelector(TABS_CONTAINER_SELECTOR);
+        routes.forEach(tab => {
+            const li = document.createElement('li');
+            li.textContent = tab.name.toUpperCase();
+            li.addEventListener('click', this.onTabClick.bind(this, tab)); 
+            tabsList.appendChild(li);
+        });
+        this.setSavedTabActive();
+        DbgConsoleLog(`routes: ${routes}`,moduleName,"populateTabs")
+    }
     
     clearTabs() {
         const tabsList = document.querySelector(TABS_CONTAINER_SELECTOR);
         tabsList.innerHTML = '';
     }
 
-    tabClickHandler(tab) {
-        const methodName = "tabClickHandler";
+    onTabClick(tab) {
+        const methodName = "onTabClick";
         this.setActiveTab(tab);
         if (this.currentTab && this.currentTab.routes) { 
-            DbgConsoleLog(`Call fetchData(${this.currentTab.routes})`, moduleName, methodName);
-            this.fetchData(this.currentTab.routes);
+            DbgConsoleLog(`Call fetchDataAndRender (${this.currentTab.routes})`, moduleName, methodName);
+            const server = GetCurrentServer() 
+            const endpoints = this.currentTab.routes;
+            const contentArea = document.getElementById(TAB_CONTENT);
+            this.fetchDataAndRender(server, endpoints, contentArea);
         } else {
             DbgConsoleLog(`Try handle click on ${tab.name} - fails`, moduleName, methodName);
         }       
@@ -94,36 +125,25 @@ class TabsClass extends Observer {
             this.currentTab = tab;
             DbgConsoleLog(`Found tab: ${JSON.stringify(this.currentTab)}`, moduleName, methodName);
             if (this.currentTab && this.currentTab.routes) { 
-                this.fetchData(this.currentTab.routes);
+                this.fetchDataAndRender(this.currentTab.routes);
                 DbgConsoleLog(`Tab content updated`, moduleName, methodName);
             }            
         }
-    
-        localStorage.setItem(this.getActiveTabStorageKey(), JSON.stringify(tab));
-        DbgConsoleLog(`set active tab - OK`, moduleName, methodName);
+        const tabKey = this.getActiveTabStorageKey()
+        const tabValue = JSON.stringify(tab)
+        localStorage.setItem(tabKey, tabValue);
+        DbgConsoleLog(`set active tab: rey=${tabKey} value=${tabValue} - OK`, moduleName, methodName);
     }
-    
 
-    async fetchData(endpoints) {
-        const methodName = "fetchData";
-        DbgConsoleLog("Provided endpoints:", moduleName, methodName, endpoints);
-        DbgConsoleLog("this.currentTab existence:", moduleName, methodName, Boolean(this.currentTab));
-        if (this.currentTab) {
-            DbgConsoleLog("this.currentTab.routes existence:", moduleName, methodName, Boolean(this.currentTab.routes));
-            DbgConsoleLog("this.currentTab.routes is array:", moduleName, methodName, Array.isArray(this.currentTab.routes));
-        }
-        try {
-            const responses = await Promise.all(endpoints.map(endpoint => fetch(GetCurrentServer() + endpoint)));
+    async fetchDataAndRender(server, endpoints, contentArea) {
+        const methodName = "fetchDataAndRender";
+        DbgConsoleLog(`server=${server}  endpoints=${endpoints}`, moduleName, methodName);
+       try {
+            const responses = await Promise.all(endpoints.map(endpoint => fetch(server + endpoint)));
             const dataArray = await Promise.all(responses.map(res => res.json()));
-    
-            const contentArea = document.getElementById('tab-content');
-           
+
+            //TODO: replace with call correspond formatter             
             dataArray.forEach((data, index) => {
-                // const formatter = this.formatterInstances[this.currentTab.endpoints[index]];
-                // if (formatter) {
-                //     const formattedData = formatter.Render(data);
-                //     contentArea.insertAdjacentHTML('beforeend', formattedData); 
-                // }
                 const formattedData = "<pre>" + JSON.stringify(data, null, 4) + "</pre>"; // перетворення дані в форматований JSON
                 contentArea.innerHTML = '';
                 contentArea.insertAdjacentHTML('beforeend', formattedData);
@@ -135,62 +155,27 @@ class TabsClass extends Observer {
         }
     }
 
-    startAutoRefresh() {
-        const methodName = "startAutoRefresh";
-        if (GetAutorefreshState()) {
-            const interval = GetAutorefreshInterval() * 1000;
-            this.refreshIntervalID = setInterval(() => {
-                DbgConsoleLog(`Call fetchData(${this.currentTab.endpoints})`, moduleName, methodName);
-                this.fetchData(this.currentTab.endpoints);
-                DbgConsoleLog("Auto-refresh executed", moduleName, methodName);
-            }, interval);
-            DbgConsoleLog(`Auto-refresh started with interval: ${interval}ms`, moduleName, methodName);
-        }
-    }
 
-    stopAutoRefresh() {
-        if (this.refreshIntervalID) {
-            clearInterval(this.refreshIntervalID);
-            this.refreshIntervalID = null;
-            DbgConsoleLog("Auto-refresh stopped", moduleName, "stopAutoRefresh");
-        }
-    }
        
     async Update(){
         const methodName = "TabsClass.Update"
         DbgConsoleLog("Someone calls NotifyObservers", moduleName, methodName);
        
         const currentServer = GetCurrentServer();
-        const autoRefreshState = GetAutorefreshState();
-        const autoRefreshInterval = GetAutorefreshInterval();
+        const autoRefreshState = GetAutoRefreshState();
+        const autoRefreshInterval = GetAutoRefreshInterval();
         
         DbgConsoleLog(`currentServer: ${currentServer}, this.currServerAddr: ${this.currServerAddr}`, moduleName, methodName);
 
-        // Якщо сервер змінився
-        if (currentServer !== this.currServerAddr) {
-            this.clearTabs();
-            await this.init(); // Ініціалізація нових вкладок для нового сервера
-        }
-
-        // Якщо стан автооновлення змінився
-        if (autoRefreshState !== this.autoRefreshState) {
-            if (autoRefreshState) {
-                this.startAutoRefresh();
-            } else {
-                this.stopAutoRefresh();
-            }
-        }
-
-        // Якщо інтервал автооновлення змінився
-        if (autoRefreshInterval !== this.autoRefreshInterval && autoRefreshState) {
-            this.stopAutoRefresh();
-            this.startAutoRefresh();
-        }
-
-        // Оновлюємо поточний стан
-        this.currServerAddr = currentServer;
-        this.autoRefreshState = autoRefreshState;
-        this.autoRefreshInterval = autoRefreshInterval;
+        const serverUrl = GetCurrentServer(); 
+        this.clearTabs()
+        const routes = this.getServerRoutes(serverUrl);
+        if (routes) {
+            this.populateTabs(routes);
+            DbgConsoleLog(`Populate tabs for ${serverUrl}`, moduleName,methodName );
+        } else {
+            DbgConsoleLog(`No tabs for ${serverUrl}`, moduleName,methodName );
+        }   
     }
 
 }

@@ -48,14 +48,14 @@ const App = new AppClass();
 /**
  * @returns {boolean} 
  */
-export function GetAutorefreshState() {
+export function GetAutoRefreshState() {
     return App.mc.GetAutoRefreshState()
 }
 
 /**
  * @returns {any} 
  */
-export function GetAutorefreshInterval() {
+export function GetAutoRefreshInterval() {
     return App.mc.GetAutoRefreshInterval()
 }
 

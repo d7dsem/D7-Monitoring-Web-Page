@@ -181,8 +181,8 @@ class MainControls extends Subject {
         DbgConsoleLog(`Dropdown dropdown.value=${dropdown.value}`, moduleName, methodName);
 
         const tThis = this;
-        document.getElementById(SERVER_DROPDOWN_ID).addEventListener('change', function() {    
-            tThis.changeServer();
+        document.getElementById(SERVER_DROPDOWN_ID).addEventListener('change', async function() {    
+            await tThis.changeServer();
             tThis.NotifyObservers();
             DbgConsoleLog(`reset current server to ${tThis.currServerAddr}`);
         });
