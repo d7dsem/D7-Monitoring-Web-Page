@@ -1,5 +1,6 @@
-export {  BothFormatter } from './bothFormatter.js';
-export {  DlgFormatter } from './dlgFormatter.js';
-export {  MemFormatter } from './memFormatter.js';
-export {  ParamFormatter } from './paramFormatter.js';
-export {  StatusFormatter } from './statusFormatter.js';
+// Auto-generated index.js
+export { statusFormatter } from './statusFormatter.js';
+export { paramFormatter } from './paramFormatter.js';
+export { dlgFormatter } from './dlgFormatter.js';
+export { bothFormatter } from './bothFormatter.js';
+export { memFormatter } from './memFormatter.js';

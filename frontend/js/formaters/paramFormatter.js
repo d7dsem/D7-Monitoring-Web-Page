@@ -1,7 +1,4 @@
-import Formatter from '../formatter.js';
-
-export class ParamFormatter extends Formatter {
-    Render(data) {
-        return JSON.stringify(data, null, 2);
-    }
+export function paramFormatter(data) {
+   const formattedData = JSON.stringify(data, null, 4);
+   return `<pre>Formatted by paramFormatter:<br>${formattedData}</pre>`;
 }

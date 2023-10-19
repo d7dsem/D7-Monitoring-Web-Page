@@ -1,7 +1,4 @@
-import Formatter from '../formatter.js';
-
-export class StatusFormatter extends Formatter {
-    Render(data) {
-        return JSON.stringify(data, null, 2);
-    }
+export function statusFormatter(data) {
+   const formattedData = JSON.stringify(data, null, 4);
+   return `<pre>Formatted by statusFormatter:<br>${formattedData}</pre>`;
 }

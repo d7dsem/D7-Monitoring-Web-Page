@@ -1,6 +1,6 @@
 import {DbgConsoleLog, GetConfiguration, GetCurrentServer, GetAutoRefreshState, GetAutoRefreshInterval} from './main.js';
 //import { BothFormatter, DlgFormatter, MemFormatter, ParamFormatter, StatusFormatter } from './formaters';
-//import {Formatter} from './formatter.js';
+import * as formatters from './formaters/index.js';
 import {Observer} from './observerStuff.js';
 import { TABS_CONTAINER_SELECTOR, TAB_ITEM_SELECTOR, TAB_CONTENT } from './params.js';
 
@@ -55,24 +55,29 @@ class TabsClass extends Observer {
 
     async startAutoRefresh(){
         const methodName = "startAutoRefresh"
-        while (true){
-            const server = GetCurrentServer() 
+        
+        DbgConsoleLog(`Sub-process 'AutoRefresh' started`, moduleName, methodName);
+        while (true){    
+            const currentTime = Date.now();        
             const isAutoRefreshOn = GetAutoRefreshState()
-            const refreshInterval = GetAutoRefreshInterval()
-            DbgConsoleLog(`autoRefreshState: ${isAutoRefreshOn}`, moduleName, methodName);
-            DbgConsoleLog(`autoRefreshInterval: ${refreshInterval}`, moduleName, methodName);
-            DbgConsoleLog(`server: ${server}`, moduleName, methodName);
-            if (this.currentTab) {
-                DbgConsoleLog(`this.currentTab: ${this.currentTab}`, moduleName, methodName);
-                DbgConsoleLog(`this.currentTab.routes is array: ${Array.isArray(this.currentTab.routes)}`, moduleName, methodName );
+            DbgConsoleLog(`isAutoRefreshOn = ${isAutoRefreshOn}`, moduleName, methodName);
+            if (isAutoRefreshOn) {
+                const server = GetCurrentServer() 
+                const refreshInterval = GetAutoRefreshInterval()
+                
+                DbgConsoleLog(`autoRefreshInterval: ${refreshInterval}`, moduleName, methodName);
+                DbgConsoleLog(`server: ${server}`, moduleName, methodName);
+                if (this.currentTab) {
+                    DbgConsoleLog(`this.currentTab: ${this.currentTab}`, moduleName, methodName);
+                    DbgConsoleLog(`this.currentTab.routes is array: ${Array.isArray(this.currentTab.routes)}`, moduleName, methodName );
+                }
+                if (currentTime - this.lastUpdateTime >= refreshInterval && this.currentTab && isAutoRefreshOn) {
+                    const endpoints = this.currentTab.routes;
+                    const contentArea = document.getElementById(TAB_CONTENT);
+                    this.fetchDataAndRender(server, endpoints, contentArea) 
+                }               
             }
-            const currentTime = Date.now();
-            if (currentTime - this.lastUpdateTime >= refreshInterval && this.currentTab && isAutoRefreshOn) {
-                const endpoints = this.currentTab.routes;
-                const contentArea = document.getElementById(TAB_CONTENT);
-                this.fetchDataAndRender(server, endpoints, contentArea) 
-            }
-            this.lastUpdateTime = currentTime;
+            this.lastUpdateTime = currentTime; 
             // Sleep for a fixed, minimum interval (e.g., 1 second)
             await new Promise(resolve => setTimeout(resolve, this.sleepInterval));
         }
@@ -138,20 +143,19 @@ class TabsClass extends Observer {
     async fetchDataAndRender(server, endpoints, contentArea) {
         const methodName = "fetchDataAndRender";
         DbgConsoleLog(`server=${server}  endpoints=${endpoints}`, moduleName, methodName);
-       try {
+        try {
             const responses = await Promise.all(endpoints.map(endpoint => fetch(server + endpoint)));
             const dataArray = await Promise.all(responses.map(res => res.json()));
 
-            //TODO: replace with call correspond formatter             
-            dataArray.forEach((data, index) => {
-                const formattedData = "<pre>" + JSON.stringify(data, null, 4) + "</pre>"; // перетворення дані в форматований JSON
-                contentArea.innerHTML = '';
-                contentArea.insertAdjacentHTML('beforeend', formattedData);
-            });
-
             
+            const formatterName = this.currentTab.formatter;
+            const formatterFunction = formatters[formatterName];
+            const infoStr = `${formatterName} - ${formatterFunction}`  
+            const formattedData = formatterFunction(dataArray)
+            contentArea.innerHTML = '';
+            contentArea.insertAdjacentHTML('beforeend', formattedData);          
         } catch (error) {
-            console.error("Error fetching data:", error);
+            DbgConsoleLog(`Error fetching data: ${error}`);
         }
     }
 

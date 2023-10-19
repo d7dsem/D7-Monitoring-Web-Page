@@ -39,7 +39,7 @@ class MainControls extends Subject {
         super(); 
         this.config = null;
         this.currServerAddr = "";
-        this.autoRefreshState = true;
+        this.autoRefreshState = false;
         this.autoRefreshInterval = null;  
     }
 
@@ -233,7 +233,8 @@ class MainControls extends Subject {
     
         // Event listener for enabling/disabling the refresh rate dropdown
         autoRefreshToggle.addEventListener('change', function() {
-            const isAutoRefreshEnabled = autoRefreshToggle.checked;             
+            const isAutoRefreshEnabled = autoRefreshToggle.checked;               
+            tThis.autoRefreshState =    isAutoRefreshEnabled;
             localStorage.setItem(AUTO_REFRESH_STATE_KEY, isAutoRefreshEnabled.toString());
             dropdown.disabled = !isAutoRefreshEnabled;
             tThis.NotifyObservers()
